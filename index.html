@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice & QR Generator Suite</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <title>Voice Generator & YouTube Tag Extractor</title>
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f0f2f5; color: #333; }
@@ -16,10 +15,10 @@
         select { font-size: 16px; background-color: #f8fafc; cursor: pointer; }
         button { background: #2563eb; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
         button:hover { background: #1d4ed8; }
-        .download-btn { background: #10b981; text-align: center; display: block; text-decoration: none; color: white; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 10px; border: none; cursor: pointer; }
-        .download-btn:hover { background: #059669; }
-        #qrcode { margin-top: 15px; text-align: center; }
-        #qrcode img, #qrcode canvas { display: inline-block; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; }
+        .tag-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+        .tag { background: #e0e7ff; color: #3730a3; padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: 500; }
+        .copy-btn { background: #059669; margin-top: 10px; }
+        .copy-btn:hover { background: #047857; }
     </style>
 </head>
 <body>
@@ -28,7 +27,7 @@
 
     <!-- 1. Voice Generator -->
     <div class="card">
-        <h2>1. Multi-Language Voice Generator</h2>
+        <h2>1. Global Voice Generator</h2>
         
         <label>দেশ ও ভাষা নির্বাচন করুন:</label>
         <select id="countrySelect">
@@ -43,21 +42,24 @@
         </select>
 
         <label>লেখা টাইপ করুন:</label>
-        <textarea id="ttsInput" rows="4" placeholder="এখানে অর্থপূর্ণ লেখা লিখুন (যেমন: আসসালামু আলাইকুম)..."></textarea>
+        <textarea id="ttsInput" rows="4" placeholder="এখানে লেখা টাইপ করুন..."></textarea>
 
         <button onclick="playVoice()">▶ ভয়েস শুনুন</button>
         <button onclick="downloadAudio()" style="background:#059669;">⬇ ভয়েস ডাউনলোড করুন</button>
     </div>
 
-    <!-- 2. QR Code Generator -->
+    <!-- 2. YouTube Tag Extractor -->
     <div class="card">
-        <h2>2. QR Code Generator & Downloader</h2>
-        <label>লিংক বা লেখা লিখুন:</label>
-        <input type="text" id="qrText" placeholder="https://example.com বা আপনার লেখা...">
-        <button onclick="generateQR()">QR Code তৈরি করুন</button>
+        <h2>2. YouTube Video Tag Extractor</h2>
+        <label>ইউটিউব ভিডিওর লিংক পেস্ট করুন:</label>
+        <input type="text" id="ytUrl" placeholder="https://www.youtube.com/watch?v=... বা shorts লিংক">
+        <button onclick="extractTags()">ট্যাগ বের করুন</button>
         
-        <div id="qrcode"></div>
-        <div id="qrDownloadArea"></div>
+        <div id="tagResult" style="display:none;">
+            <label>ভিডিওতে ব্যবহৃত ট্যাগসমূহ:</label>
+            <div id="tagsList" class="tag-container"></div>
+            <button class="copy-btn" onclick="copyAllTags()">📋 সব ট্যাগ কপি করুন</button>
+        </div>
     </div>
 
 </div>
@@ -73,7 +75,7 @@
             return; 
         }
 
-        window.speechSynthesis.cancel(); // Stop any previous voice
+        window.speechSynthesis.cancel();
         let utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = lang;
         window.speechSynthesis.speak(utterance);
@@ -90,7 +92,6 @@
 
         let audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=${lang}&client=tw-ob`;
         
-        // Direct Download Trigger
         let a = document.createElement("a");
         a.href = audioUrl;
         a.target = "_blank";
@@ -100,42 +101,63 @@
         document.body.removeChild(a);
     }
 
-    // QR Code Generator Logic
-    function generateQR() {
-        let qrContainer = document.getElementById("qrcode");
-        let downloadArea = document.getElementById("qrDownloadArea");
-        qrContainer.innerHTML = "";
-        downloadArea.innerHTML = "";
-        
-        let text = document.getElementById("qrText").value.trim();
-        if(text) {
-            new QRCode(qrContainer, { text: text, width: 200, height: 200 });
-            
-            setTimeout(() => {
-                let img = qrContainer.querySelector("img");
-                let canvas = qrContainer.querySelector("canvas");
-                let imgSrc = "";
-                
-                if (img && img.src) {
-                    imgSrc = img.src;
-                } else if (canvas) {
-                    imgSrc = canvas.toDataURL("image/png");
-                }
+    // YouTube Tag Extractor Logic
+    let fetchedTags = [];
 
-                if(imgSrc) {
-                    let a = document.createElement("a");
-                    a.href = imgSrc;
-                    a.download = "qrcode.png";
-                    a.className = "download-btn";
-                    a.innerText = "⬇ গ্যালারিতে QR Code সেভ করুন";
-                    downloadArea.appendChild(a);
-                }
-            }, 300);
+    async function extractTags() {
+        let url = document.getElementById("ytUrl").value.trim();
+        let tagResult = document.getElementById("tagResult");
+        let tagsList = document.getElementById("tagsList");
+        
+        if (!url) {
+            alert("অনুগ্রহ করে একটি ইউটিউব ভিডিওর লিংক দিন!");
+            return;
+        }
+
+        tagsList.innerHTML = "<p>ট্যাগ খোঁজা হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...</p>";
+        tagResult.style.display = "block";
+
+        try {
+            let proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(url);
+            let response = await fetch(proxyUrl);
+            let data = await response.json();
+            
+            let parser = new DOMParser();
+            let doc = parser.parseFromString(data.contents, "text/html");
+            let metaTags = doc.querySelectorAll('meta[property="og:video:tag"]');
+            
+            fetchedTags = [];
+            metaTags.forEach(tag => {
+                fetchedTags.push(tag.getAttribute("content"));
+            });
+
+            if (fetchedTags.length > 0) {
+                tagsList.innerHTML = "";
+                fetchedTags.forEach(t => {
+                    let span = document.createElement("span");
+                    span.className = "tag";
+                    span.innerText = "# " + t;
+                    tagsList.appendChild(span);
+                });
+            } else {
+                tagsList.innerHTML = "<p style='color:red;'>এই ভিডিওতে কোনো ট্যাগ পাওয়া যায়নি বা ভিডিওটি প্রাইভেট।</p>";
+            }
+        } catch (error) {
+            tagsList.innerHTML = "<p style='color:red;'>ট্যাগ লোড করতে সমস্যা হয়েছে। সঠিক ইউটিউব ভিডিও লিংক ব্যবহার করুন।</p>";
+        }
+    }
+
+    function copyAllTags() {
+        if (fetchedTags.length > 0) {
+            let tagText = fetchedTags.join(", ");
+            navigator.clipboard.writeText(tagText);
+                alert("সবগুলো ট্যাগ ক্লিপবোর্ডে কপি করা হয়েছে!");
         } else {
-            alert("অনুগ্রহ করে লিংক বা লেখা প্রদান করুন!");
+            alert("কপি করার মতো কোনো ট্যাগ নেই!");
         }
     }
 </script>
 
 </body>
 </html>
+
