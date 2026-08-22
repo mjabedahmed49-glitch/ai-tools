@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Voice & Pure QR Generator</title>
+    <title>Voice & QR Generator Suite</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * { box-sizing: border-box; }
@@ -28,29 +28,28 @@
 
     <!-- 1. Voice Generator -->
     <div class="card">
-        <h2>1. Global Voice Generator (With Country Flags)</h2>
+        <h2>1. Multi-Language Voice Generator</h2>
         
         <label>দেশ ও ভাষা নির্বাচন করুন:</label>
         <select id="countrySelect">
-            <option value="bn">🇧🇩 Bangladesh (বাংলা)</option>
-            <option value="en">🇺🇸 USA / English (ইংরেজি)</option>
-            <option value="hi">🇮🇳 India (হিন্দি)</option>
-            <option value="ar">🇸🇦 Saudi Arabia (আরবি)</option>
-            <option value="es">🇪🇸 Spain (স্প্যানিশ)</option>
-            <option value="fr">🇫🇷 France (ফরাসি)</option>
-            <option value="de">🇩🇪 Germany (জার্মান)</option>
-            <option value="ja">🇯🇵 Japan (জাপানি)</option>
+            <option value="bn-BD">🇧🇩 Bangladesh (বাংলা)</option>
+            <option value="en-US">🇺🇸 USA / English (ইংরেজি)</option>
+            <option value="hi-IN">🇮🇳 India (হিন্দি)</option>
+            <option value="ar-SA">🇸🇦 Saudi Arabia (আরবি)</option>
+            <option value="es-ES">🇪🇸 Spain (স্প্যানিশ)</option>
+            <option value="fr-FR">🇫🇷 France (ফরাসি)</option>
+            <option value="de-DE">🇩🇪 Germany (জার্মান)</option>
+            <option value="ja-JP">🇯🇵 Japan (জাপানি)</option>
         </select>
 
         <label>লেখা টাইপ করুন:</label>
-        <textarea id="ttsInput" rows="4" placeholder="এখানে আপনার বার্তাটি লিখুন..."></textarea>
+        <textarea id="ttsInput" rows="4" placeholder="এখানে অর্থপূর্ণ লেখা লিখুন (যেমন: আসসালামু আলাইকুম)..."></textarea>
 
-        <button onclick="generateAudio()">▶ ভয়েস তৈরি করুন ও শুনুন</button>
-        
-        <div id="audioArea"></div>
+        <button onclick="playVoice()">▶ ভয়েস শুনুন</button>
+        <button onclick="downloadAudio()" style="background:#059669;">⬇ ভয়েস ডাউনলোড করুন</button>
     </div>
 
-    <!-- 2. Fixed Image QR Code Generator -->
+    <!-- 2. QR Code Generator -->
     <div class="card">
         <h2>2. QR Code Generator & Downloader</h2>
         <label>লিংক বা লেখা লিখুন:</label>
@@ -64,25 +63,44 @@
 </div>
 
 <script>
-    function generateAudio() {
+    // Voice Generator Logic
+    function playVoice() {
         let text = document.getElementById("ttsInput").value.trim();
         let lang = document.getElementById("countrySelect").value;
 
         if (!text) { 
-            alert("অনুগ্রহ করে কিছু লেখা টাইপ করুন!"); 
+            alert("অনুগ্রহ করে কোনো লেখা টাইপ করুন!"); 
             return; 
         }
-        
-        let googleTtsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=${lang}&client=tw-ob`;
-        
-        let audioArea = document.getElementById("audioArea");
-        audioArea.innerHTML = `
-            <p style="margin-top:15px; font-weight:bold; color:#059669;">✓ ভয়েস প্রস্তুত হয়েছে:</p>
-            <audio controls autoplay src="${googleTtsUrl}" style="width:100%; margin-top:5px;"></audio>
-            <a class="download-btn" href="${googleTtsUrl}" target="_blank" download="voice.mp3">⬇ অডিও ডাউনলোড করুন</a>
-        `;
+
+        window.speechSynthesis.cancel(); // Stop any previous voice
+        let utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = lang;
+        window.speechSynthesis.speak(utterance);
     }
 
+    function downloadAudio() {
+        let text = document.getElementById("ttsInput").value.trim();
+        let lang = document.getElementById("countrySelect").value.split('-')[0];
+
+        if (!text) { 
+            alert("ডাউনলোড করার জন্য আগে কিছু লেখা লিখুন!"); 
+            return; 
+        }
+
+        let audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=${lang}&client=tw-ob`;
+        
+        // Direct Download Trigger
+        let a = document.createElement("a");
+        a.href = audioUrl;
+        a.target = "_blank";
+        a.download = "voice.mp3";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    // QR Code Generator Logic
     function generateQR() {
         let qrContainer = document.getElementById("qrcode");
         let downloadArea = document.getElementById("qrDownloadArea");
