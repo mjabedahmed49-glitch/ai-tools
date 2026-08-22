@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice & QR Generator Suite</title>
+    <title>Global Voice & Pure QR Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * { box-sizing: border-box; }
@@ -12,36 +12,45 @@
         .card { background: white; padding: 25px; margin-bottom: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         h2 { color: #1e3a8a; margin-top: 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
         label { font-weight: bold; font-size: 14px; display: block; margin-top: 10px; }
-        input, textarea, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; }
+        input, textarea, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; }
+        select { font-size: 16px; background-color: #f8fafc; cursor: pointer; }
         button { background: #2563eb; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
         button:hover { background: #1d4ed8; }
-        .download-btn { background: #10b981; text-align: center; display: block; text-decoration: none; color: white; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 10px; }
+        .download-btn { background: #10b981; text-align: center; display: block; text-decoration: none; color: white; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 10px; border: none; cursor: pointer; }
         .download-btn:hover { background: #059669; }
         #qrcode { margin-top: 15px; text-align: center; }
-        #qrcode img { display: inline-block; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; }
+        #qrcode img, #qrcode canvas { display: inline-block; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; }
     </style>
 </head>
 <body>
 
 <div class="container">
 
-    <!-- 1. Text to Speech Generator -->
+    <!-- 1. Voice Generator -->
     <div class="card">
-        <h2>1. Multi-Language Voice Generator</h2>
+        <h2>1. Global Voice Generator (With Country Flags)</h2>
         
-        <label>লেখা টাইপ করুন:</label>
-        <textarea id="ttsInput" rows="4" placeholder="এখানে আপনার বার্তাটি লিখুন (বাংলা বা ইংরেজি)..."></textarea>
-        
-        <label>ভাষা ও দেশের কণ্ঠ নির্বাচন করুন:</label>
-        <select id="voiceSelect"><option value="">ভয়েস লোড হচ্ছে...</option></select>
+        <label>দেশ ও ভাষা নির্বাচন করুন:</label>
+        <select id="countrySelect">
+            <option value="bn">🇧🇩 Bangladesh (বাংলা)</option>
+            <option value="en">🇺🇸 USA / English (ইংরেজি)</option>
+            <option value="hi">🇮🇳 India (হিন্দি)</option>
+            <option value="ar">🇸🇦 Saudi Arabia (আরবি)</option>
+            <option value="es">🇪🇸 Spain (স্প্যানিশ)</option>
+            <option value="fr">🇫🇷 France (ফরাসি)</option>
+            <option value="de">🇩🇪 Germany (জার্মান)</option>
+            <option value="ja">🇯🇵 Japan (জাপানি)</option>
+        </select>
 
-        <button onclick="playVoice()">▶ ভয়েস শুনুন</button>
-        <button onclick="generateAudioDownload()" style="background:#059669;">⬇ ভয়েস ফাইল রেডি করুন</button>
+        <label>লেখা টাইপ করুন:</label>
+        <textarea id="ttsInput" rows="4" placeholder="এখানে আপনার বার্তাটি লিখুন..."></textarea>
+
+        <button onclick="generateAudio()">▶ ভয়েস তৈরি করুন ও শুনুন</button>
         
         <div id="audioArea"></div>
     </div>
 
-    <!-- 2. QR Code Generator -->
+    <!-- 2. Fixed Image QR Code Generator -->
     <div class="card">
         <h2>2. QR Code Generator & Downloader</h2>
         <label>লিংক বা লেখা লিখুন:</label>
@@ -55,73 +64,53 @@
 </div>
 
 <script>
-    // Text to Speech Script
-    let synth = window.speechSynthesis;
-    let voiceSelect = document.getElementById("voiceSelect");
-    let voices = [];
+    function generateAudio() {
+        let text = document.getElementById("ttsInput").value.trim();
+        let lang = document.getElementById("countrySelect").value;
 
-    function populateVoiceList() {
-        voices = synth.getVoices();
-        voiceSelect.innerHTML = '';
-        
-        voices.forEach((voice, index) => {
-            let option = document.createElement('option');
-            option.textContent = `${voice.name} (${voice.lang})`;
-            option.setAttribute('data-lang', voice.lang);
-            option.setAttribute('data-name', voice.name);
-            option.value = index;
-            voiceSelect.appendChild(option);
-        });
-    }
-
-    populateVoiceList();
-    if (speechSynthesis.onvoiceschanged !== undefined) {
-        speechSynthesis.onvoiceschanged = populateVoiceList;
-    }
-
-    function playVoice() {
-        let text = document.getElementById("ttsInput").value;
-        if (!text) { alert("অনুগ্রহ করে কিছু লেখা লিখুন!"); return; }
-        
-        let utterThis = new SpeechSynthesisUtterance(text);
-        let selectedOption = voiceSelect.value;
-        if (selectedOption !== "") {
-            utterThis.voice = voices[selectedOption];
+        if (!text) { 
+            alert("অনুগ্রহ করে কিছু লেখা টাইপ করুন!"); 
+            return; 
         }
-        synth.speak(utterThis);
-    }
-
-    function generateAudioDownload() {
-        let text = document.getElementById("ttsInput").value;
-        if (!text) { alert("অনুগ্রহ করে কিছু লেখা লিখুন!"); return; }
-        
-        let selectedIndex = voiceSelect.value;
-        let lang = voices[selectedIndex] ? voices[selectedIndex].lang : 'en-US';
         
         let googleTtsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=${lang}&client=tw-ob`;
         
         let audioArea = document.getElementById("audioArea");
         audioArea.innerHTML = `
-            <p style="margin-top:15px; font-weight:bold;">অডিও প্রস্তুত হয়েছে:</p>
-            <audio controls src="${googleTtsUrl}" style="width:100%; margin-top:5px;"></audio>
-            <a class="download-btn" href="${googleTtsUrl}" target="_blank" download="voice.mp3">গ্যালারিতে অডিও ডাউনলোড করুন</a>
+            <p style="margin-top:15px; font-weight:bold; color:#059669;">✓ ভয়েস প্রস্তুত হয়েছে:</p>
+            <audio controls autoplay src="${googleTtsUrl}" style="width:100%; margin-top:5px;"></audio>
+            <a class="download-btn" href="${googleTtsUrl}" target="_blank" download="voice.mp3">⬇ অডিও ডাউনলোড করুন</a>
         `;
     }
 
-    // QR Code Script
     function generateQR() {
         let qrContainer = document.getElementById("qrcode");
         let downloadArea = document.getElementById("qrDownloadArea");
         qrContainer.innerHTML = "";
         downloadArea.innerHTML = "";
         
-        let text = document.getElementById("qrText").value;
+        let text = document.getElementById("qrText").value.trim();
         if(text) {
-            new QRCode(qrContainer, { text: text, width: 180, height: 180 });
+            new QRCode(qrContainer, { text: text, width: 200, height: 200 });
+            
             setTimeout(() => {
                 let img = qrContainer.querySelector("img");
-                if (img) {
-                    downloadArea.innerHTML = `<a class="download-btn" href="${img.src}" download="qrcode.png">গ্যালারিতে QR Code সেভ করুন</a>`;
+                let canvas = qrContainer.querySelector("canvas");
+                let imgSrc = "";
+                
+                if (img && img.src) {
+                    imgSrc = img.src;
+                } else if (canvas) {
+                    imgSrc = canvas.toDataURL("image/png");
+                }
+
+                if(imgSrc) {
+                    let a = document.createElement("a");
+                    a.href = imgSrc;
+                    a.download = "qrcode.png";
+                    a.className = "download-btn";
+                    a.innerText = "⬇ গ্যালারিতে QR Code সেভ করুন";
+                    downloadArea.appendChild(a);
                 }
             }, 300);
         } else {
@@ -131,5 +120,4 @@
 </script>
 
 </body>
-  </html>
-  
+</html>
