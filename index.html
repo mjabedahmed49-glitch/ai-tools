@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111827">
+<meta name="description" content="NEXORA Business Tools - Free productivity tools for everyone">
+<title>NEXORA — Business Tools</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Arial,Helvetica,sans-serif;
+  background:#f5f7fb;
+  color:#111827;
+  line-height:1.5
+}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.header{
+  background:#111827;color:white;padding:16px 5%;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:10
+}
+.logo{font-size:25px;font-weight:800}
+.logo span{color:#60a5fa}
+.nav{display:flex;gap:8px;flex-wrap:wrap}
+.nav button{
+  background:transparent;border:0;color:#d1d5db;
+  padding:8px 12px;border-radius:8px
+}
+.nav button:hover{background:#1f2937;color:white}
+.hero{
+  padding:65px 5%;text-align:center;
+  background:linear-gradient(135deg,#111827,#1e3a8a)
+}
+.hero h1{font-size:clamp(35px,7vw,65px);color:white;margin-bottom:15px}
+.hero p{color:#dbeafe;max-width:700px;margin:auto;font-size:18px}
+.search{
+  margin:28px auto 0;max-width:600px;display:flex;
+}
+.search input{
+  width:100%;padding:15px;border:0;border-radius:10px 0 0 10px;
+  outline:none
+}
+.search button{
+  padding:15px 20px;border:0;background:#3b82f6;color:white;
+  border-radius:0 10px 10px 0
+}
+.container{width:90%;max-width:1200px;margin:40px auto}
+.section-title{margin-bottom:20px;font-size:28px}
+.tools{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:18px
+}
+.card{
+  background:white;padding:22px;border-radius:16px;
+  border:1px solid #e5e7eb;box-shadow:0 5px 20px #00000008;
+  transition:.2s
+}
+.card:hover{transform:translateY(-3px);box-shadow:0 10px 25px #00000012}
+.icon{font-size:35px;margin-bottom:10px}
+.card h3{margin-bottom:7px}
+.card p{color:#6b7280;font-size:14px}
+.card button{
+  margin-top:15px;width:100%;padding:11px;border:0;
+  border-radius:9px;background:#111827;color:white
+}
+.modal{
+  display:none;position:fixed;inset:0;background:#0008;
+  z-index:50;align-items:center;justify-content:center;padding:15px
+}
+.modal-box{
+  background:white;width:100%;max-width:650px;max-height:90vh;
+  overflow:auto;border-radius:18px;padding:25px;position:relative
+}
+.close{
+  position:absolute;right:15px;top:12px;border:0;
+  background:#eee;border-radius:50%;width:35px;height:35px
+}
+.modal h2{margin-bottom:18px}
+textarea,input,select{
+  width:100%;padding:12px;border:1px solid #d1d5db;
+  border-radius:9px;margin:8px 0 14px;outline:none
+}
+textarea{min-height:160px;resize:vertical}
+.action{
+  background:#2563eb;color:white;border:0;padding:11px 16px;
+  border-radius:8px;margin:4px
+}
+.secondary{background:#e5e7eb;color:#111827}
+.result{
+  margin-top:15px;background:#f3f4f6;padding:15px;
+  border-radius:10px;word-break:break-word
+}
+.stats{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px
+}
+.stat{background:#eff6ff;padding:15px;border-radius:10px;text-align:center}
+.stat b{display:block;font-size:25px;color:#2563eb}
+.qrbox{text-align:center;margin:20px}
+.qrbox img{max-width:260px}
+.color-preview{
+  width:100%;height:100px;border-radius:12px;margin:10px 0
+}
+footer{
+  margin-top:50px;background:#111827;color:#9ca3af;
+  text-align:center;padding:30px
+}
+.notice{
+  padding:12px;background:#eff6ff;border-left:4px solid #2563eb;
+  border-radius:6px;margin-bottom:15px
+}
+@media(max-width:600px){
+ .nav{display:none}
+ .hero{padding:45px 5%}
+ .stats{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<header class="header">
+  <div class="logo">NEX<span>ORA</span></div>
+  <nav class="nav">
+    <button onclick="scrollToTools()">Tools</button>
+    <button onclick="openTool('about')">About</button>
+  </nav>
+</header>
+
+<section class="hero">
+  <h1>Powerful Tools. One Place.</h1>
+  <p>Free online business and productivity tools for creators, students, freelancers and companies.</p>
+
+  <div class="search">
+    <input id="searchInput" placeholder="Search tools..." oninput="searchTools()">
+    <button onclick="searchTools()">Search</button>
+  </div>
+</section>
+
+<main class="container" id="toolsSection">
+
+<h2 class="section-title">Popular Tools</h2>
+
+<div class="tools" id="toolGrid">
+
+<div class="card" data-name="qr code generator">
+<div class="icon">🔳</div>
+<h3>QR Code Generator</h3>
+<p>Create a QR code from any text or URL.</p>
+<button onclick="openTool('qr')">Open Tool</button>
+</div>
+
+<div class="card" data-name="password generator">
+<div class="icon">🔐</div>
+<h3>Password Generator</h3>
+<p>Generate strong random passwords.</p>
+<button onclick="openTool('password')">Open Tool</button>
+</div>
+
+<div class="card" data-name="text counter">
+<div class="icon">📝</div>
+<h3>Text Counter</h3>
+<p>Count words, characters and lines.</p>
+<button onclick="openTool('counter')">Open Tool</button>
+</div>
+
+<div class="card" data-name="json formatter">
+<div class="icon">🧩</div>
+<h3>JSON Formatter</h3>
+<p>Format and validate JSON data.</p>
+<button onclick="openTool('json')">Open Tool</button>
+</div>
+
+<div class="card" data-name="url encoder decoder">
+<div class="icon">🔗</div>
+<h3>URL Encoder</h3>
+<p>Encode or decode website URLs.</p>
+<button onclick="openTool('url')">Open Tool</button>
+</div>
+
+<div class="card" data-name="color picker">
+<div class="icon">🎨</div>
+<h3>Color Picker</h3>
+<p>Choose a color and get HEX/RGB values.</p>
+<button onclick="openTool('color')">Open Tool</button>
+</div>
+
+<div class="card" data-name="unit converter">
+<div class="icon">📏</div>
+<h3>Unit Converter</h3>
+<p>Convert common length units instantly.</p>
+<button onclick="openTool('unit')">Open Tool</button>
+</div>
+
+<div class="card" data-name="image compressor">
+<div class="icon">🖼️</div>
+<h3>Image Compressor</h3>
+<p>Compress an image directly in your browser.</p>
+<button onclick="openTool('image')">Open Tool</button>
+</div>
+
+<div class="card" data-name="invoice generator">
+<div class="icon">🧾</div>
+<h3>Invoice Generator</h3>
+<p>Create a simple printable invoice.</p>
+<button onclick="openTool('invoice')">Open Tool</button>
+</div>
+
+<div class="card" data-name="timestamp converter">
+<div class="icon">⏱️</div>
+<h3>Timestamp</h3>
+<p>Convert dates to Unix timestamps.</p>
+<button onclick="openTool('timestamp')">Open Tool</button>
+</div>
+
+<div class="card" data-name="case converter">
+<div class="icon">🔤</div>
+<h3>Case Converter</h3>
+<p>Convert text to upper or lowercase.</p>
+<button onclick="openTool('case')">Open Tool</button>
+</div>
+
+<div class="card" data-name="calculator">
+<div class="icon">🧮</div>
+<h3>Calculator</h3>
+<p>Quickly calculate numbers.</p>
+<button onclick="openTool('calculator')">Open Tool</button>
+</div>
+
+</div>
+</main>
+
+<footer>
+  <strong>NEXORA</strong>
+  <p>Free productivity tools for everyone.</p>
+  <p>© 2026 NEXORA. All rights reserved.</p>
+</footer>
+
+<div class="modal" id="modal">
+<div class="modal-box">
+<button class="close" onclick="closeTool()">×</button>
+<div id="modalContent"></div>
+</div>
+</div>
+
+<script>
+
+const modal=document.getElementById("modal");
+const content=document.getElementById("modalContent");
+
+function openTool(type){
+
+let html="";
+
+if(type==="qr"){
+html=`
+<h2>🔳 QR Code Generator</h2>
+<p>Enter a URL or text.</p>
+<input id="qrText" placeholder="https://example.com">
+<button class="action" onclick="generateQR()">Generate QR</button>
+<div id="qrResult" class="qrbox"></div>
+`;
+}
+
+if(type==="password"){
+html=`
+<h2>🔐 Password Generator</h2>
+<label>Password length</label>
+<input id="passLength" type="number" value="16" min="4" max="100">
+<button class="action" onclick="generatePassword()">Generate</button>
+<div id="passResult" class="result"></div>
+`;
+}
+
+if(type==="counter"){
+html=`
+<h2>📝 Text Counter</h2>
+<textarea id="counterText" oninput="countText()" placeholder="Type or paste your text..."></textarea>
+<div class="stats">
+<div class="stat"><b id="words">0</b>Words</div>
+<div class="stat"><b id="chars">0</b>Characters</div>
+<div class="stat"><b id="lines">0</b>Lines</div>
+</div>
+`;
+}
+
+if(type==="json"){
+html=`
+<h2>🧩 JSON Formatter</h2>
+<textarea id="jsonInput" placeholder='{"name":"NEXORA","tools":12}'></textarea>
+<button class="action" onclick="formatJSON()">Format JSON</button>
+<button class="action secondary" onclick="clearJSON()">Clear</button>
+<div id="jsonResult" class="result"></div>
+`;
+}
+
+if(type==="url"){
+html=`
+<h2>🔗 URL Encoder / Decoder</h2>
+<textarea id="urlInput" placeholder="Enter URL or text"></textarea>
+<button class="action" onclick="encodeURL()">Encode</button>
+<button class="action" onclick="decodeURL()">Decode</button>
+<div id="urlResult" class="result"></div>
+`;
+}
+
+if(type==="color"){
+html=`
+<h2>🎨 Color Picker</h2>
+<input id="colorInput" type="color" value="#2563eb" oninput="showColor()">
+<div id="colorPreview" class="color-preview"></div>
+<div id="colorValue" class="result"></div>
+`;
+setTimeout(showColor,50);
+}
+
+if(type==="unit"){
+html=`
+<h2>📏 Length Converter</h2>
+<input id="unitValue" type="number" value="1">
+<select id="unitFrom">
+<option value="m">Meter</option>
+<option value="km">Kilometer</option>
+<option value="cm">Centimeter</option>
+<option value="ft">Feet</option>
+<option value="in">Inch</option>
+</select>
+<select id="unitTo">
+<option value="m">Meter</option>
+<option value="km">Kilometer</option>
+<option value="cm">Centimeter</option>
+<option value="ft">Feet</option>
+<option value="in">Inch</option>
+</select>
+<button class="action" onclick="convertUnit()">Convert</button>
+<div id="unitResult" class="result"></div>
+`;
+}
+
+if(type==="image"){
+html=`
+<h2>🖼️ Image Compressor</h2>
+<div class="notice">Your image is processed inside your browser.</div>
+<input id="imageFile" type="file" accept="image/*">
+<label>Quality: <span id="qualityText">70%</span></label>
+<input id="quality" type="range" min="10" max="100" value="70"
+oninput="qualityText.innerText=this.value+'%'">
+<button class="action" onclick="compressImage()">Compress Image</button>
+<div id="imageResult" class="result"></div>
+`;
+}
+
+if(type==="invoice"){
+html=`
+<h2>🧾 Invoice Generator</h2>
+<input id="businessName" placeholder="Business name">
+<input id="customerName" placeholder="Customer name">
+<input id="itemName" placeholder="Item / Service">
+<input id="itemPrice" type="number" placeholder="Price">
+<button class="action" onclick="makeInvoice()">Create Invoice</button>
+<div id="invoiceResult"></div>
+`;
+}
+
+if(type==="timestamp"){
+html=`
+<h2>⏱️ Timestamp Converter</h2>
+<input id="dateInput" type="datetime-local">
+<button class="action" onclick="toTimestamp()">Convert</button>
+<div id="timestampResult" class="result"></div>
+`;
+}
+
+if(type==="case"){
+html=`
+<h2>🔤 Case Converter</h2>
+<textarea id="caseInput" placeholder="Enter text"></textarea>
+<button class="action" onclick="upperCase()">UPPERCASE</button>
+<button class="action" onclick="lowerCase()">lowercase</button>
+<div id="caseResult" class="result"></div>
+`;
+}
+
+if(type==="calculator"){
+html=`
+<h2>🧮 Calculator</h2>
+<input id="calcInput" placeholder="Example: 25*4+10/2">
+<button class="action" onclick="calculate()">Calculate</button>
+<div id="calcResult" class="result"></div>
+`;
+}
+
+if(type==="about"){
+html=`
+<h2>About NEXORA</h2>
+<p>NEXORA is a productivity platform containing useful tools for businesses, creators, students and everyday users.</p>
+<br>
+<p>More tools and business features can be added later.</p>
+`;
+}
+
+content.innerHTML=html;
+modal.style.display="flex";
+}
+
+function closeTool(){
+modal.style.display="none";
+}
+
+modal.addEventListener("click",e=>{
+if(e.target===modal)closeTool();
+});
+
+function generateQR(){
+const text=document.getElementById("qrText").value.trim();
+if(!text)return alert("Please enter text or URL.");
+
+const url=
+"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data="
++encodeURIComponent(text);
+
+document.getElementById("qrResult").innerHTML=`
+<img src="${url}" alt="QR Code">
+<br>
+<a href="${url}" target="_blank" download="nexora-qr.png">
+<button class="action">Open / Save QR</button>
+</a>
+`;
+}
+
+function generatePassword(){
+const length=parseInt(document.getElementById("passLength").value)||16;
+const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=";
+let result="";
+const array=new Uint32Array(length);
+crypto.getRandomValues(array);
+
+for(let i=0;i<length;i++){
+result+=chars[array[i]%chars.length];
+}
+
+document.getElementById("passResult").innerHTML=`
+<strong>${result}</strong>
+<br><br>
+<button class="action" onclick="navigator.clipboard.writeText('${result}')">Copy Password</button>
+`;
+}
+
+function countText(){
+const text=document.getElementById("counterText").value;
+const words=text.trim()?text.trim().split(/\s+/).length:0;
+document.getElementById("words").innerText=words;
+document.getElementById("chars").innerText=text.length;
+document.getElementById("lines").innerText=text?text.split("\n").length:0;
+}
+
+function formatJSON(){
+try{
+const value=JSON.parse(document.getElementById("jsonInput").value);
+document.getElementById("jsonResult").innerHTML=
+"<pre>"+escapeHTML(JSON.stringify(value,null,2))+"</pre>";
+}catch(e){
+document.getElementById("jsonResult").innerHTML=
+"<span style='color:red'>Invalid JSON ❌</span>";
+}
+}
+
+function clearJSON(){
+document.getElementById("jsonInput").value="";
+document.getElementById("jsonResult").innerHTML="";
+}
+
+function escapeHTML(str){
+return str.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;");
+}
+
+function encodeURL(){
+const text=document.getElementById("urlInput").value;
+document.getElementById("urlResult").innerText=encodeURIComponent(text);
+}
+
+function decodeURL(){
+try{
+const text=document.getElementById("urlInput").value;
+document.getElementById("urlResult").innerText=decodeURIComponent(text);
+}catch(e){
+document.getElementById("urlResult").innerText="Invalid encoded URL";
+}
+}
+
+function showColor(){
+const color=document.getElementById("colorInput").value;
+document.getElementById("colorPreview").style.background=color;
+document.getElementById("colorValue").innerText=color;
+}
+
+function convertUnit(){
+const value=parseFloat(document.getElementById("unitValue").value);
+const from=document.getElementById("unitFrom").value;
+const to=document.getElementById("unitTo").value;
+
+const meter={
+m:1,
+km:1000,
+cm:.01,
+ft:.3048,
+in:.0254
+};
+
+const result=value*meter[from]/meter[to];
+
+document.getElementById("unitResult").innerText=
+result+" "+to;
+}
+
+function compressImage(){
+
+const file=document.getElementById("imageFile").files[0];
+
+if(!file)return alert("Please choose an image.");
+
+const quality=parseInt(document.getElementById("quality").value)/100;
+const reader=new FileReader();
+
+reader.onload=e=>{
+const img=new Image();
+
+img.onload=()=>{
+
+const canvas=document.createElement("canvas");
+const max=1600;
+
+let w=img.width;
+let h=img.height;
+
+if(w>max){
+h=h*max/w;
+w=max;
+}
+
+if(h>max){
+w=w*max/h;
+h=max;
+}
+
+canvas.width=w;
+canvas.height=h;
+
+const ctx=canvas.getContext("2d");
+ctx.drawImage(img,0,0,w,h);
+
+canvas.toBlob(blob=>{
+
+const url=URL.createObjectURL(blob);
+
+document.getElementById("imageResult").innerHTML=`
+<p>Original: ${(file.size/1024).toFixed(1)} KB</p>
+<p>Compressed: ${(blob.size/1024).toFixed(1)} KB</p>
+<a href="${url}" download="nexora-compressed.jpg">
+<button class="action">Download Image</button>
+</a>
+`;
+
+},"image/jpeg",quality);
+
+};
+
+img.src=e.target.result;
+};
+
+reader.readAsDataURL(file);
+}
+
+function makeInvoice(){
+
+const business=document.getElementById("businessName").value||"NEXORA Business";
+const customer=document.getElementById("customerName").value||"Customer";
+const item=document.getElementById("itemName").value||"Service";
+const price=parseFloat(document.getElementById("itemPrice").value)||0;
+
+document.getElementById("invoiceResult").innerHTML=`
+<div class="result" id="printInvoice">
+<h2>${escapeHTML(business)}</h2>
+<hr><br>
+<p><strong>Invoice</strong></p>
+<p>Customer: ${escapeHTML(customer)}</p>
+<p>Service: ${escapeHTML(item)}</p>
+<p>Amount: $${price.toFixed(2)}</p>
+<br>
+<strong>Total: $${price.toFixed(2)}</strong>
+</div>
+<button class="action" onclick="window.print()">Print / Save PDF</button>
+`;
+}
+
+function toTimestamp(){
+
+const value=document.getElementById("dateInput").value;
+
+if(!value)return alert("Choose a date.");
+
+const date=new Date(value);
+
+document.getElementById("timestampResult").innerText=
+Math.floor(date.getTime()/1000);
+}
+
+function upperCase(){
+document.getElementById("caseResult").innerText=
+document.getElementById("caseInput").value.toUpperCase();
+}
+
+function lowerCase(){
+document.getElementById("caseResult").innerText=
+document.getElementById("caseInput").value.toLowerCase();
+}
+
+function calculate(){
+
+const input=document.getElementById("calcInput").value;
+
+if(!/^[0-9+\-*/(). %]+$/.test(input)){
+return document.getElementById("calcResult").innerText=
+"Only numbers and basic operators are allowed.";
+}
+
+try{
+const result=Function('"use strict";return ('+input+')')();
+document.getElementById("calcResult").innerText=result;
+}catch(e){
+document.getElementById("calcResult").innerText="Invalid calculation";
+}
+}
+
+function searchTools(){
+
+const query=document.getElementById("searchInput").value.toLowerCase();
+
+document.querySelectorAll(".card").forEach(card=>{
+const name=card.dataset.name;
+card.style.display=name.includes(query)?"block":"none";
+});
+}
+
+function scrollToTools(){
+document.getElementById("toolsSection").scrollIntoView({
+behavior:"smooth"
+});
+}
+
+</script>
+
+</body>
+  </html>
